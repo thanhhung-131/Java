@@ -15,11 +15,13 @@ import java.sql.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Iterator;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -88,7 +90,7 @@ public class De_1_102200302_HoThanhHung extends JFrame implements ActionListener
 		
 		
 		//set textArea
-		Border border = new LineBorder(Color.black);
+		Border border = new LineBorder(Color.black); 
 		textArea.setBorder(border);
 		textArea.setAlignmentY(CENTER_ALIGNMENT);
 		textArea.setEditable(false);
@@ -122,61 +124,106 @@ public class De_1_102200302_HoThanhHung extends JFrame implements ActionListener
 		centerJPanel.add(textArea, BorderLayout.SOUTH);
 		this.getContentPane().add(centerJPanel, BorderLayout.SOUTH);
 		
-		//create file r/w
+		//connect sqlserver
 
 		
 		//Sign up listener
 		importfileButton.addActionListener(this);
 		soluongButton.addActionListener(this);
-		
-		//event
-		
-		
+		tongtienButton.addActionListener(this);
+		goiyButton.addActionListener(this);
 		
 		this.setVisible(true);
-		// repaint
 	}
-	
-	public static void main(String[] args) {
+	//ket noi, excute query sql
+	public static void SQLconnection() throws SQLException {
+		String connnectionUrlString = "jdbc:sqlserver://DESKTOP-8622U14:1433;databasename=QuanLyDonHang;encrypt=true;user=sa;password=hung1312002;trustServerCertificate=true;";
+		Connection connection = DriverManager.getConnection(connnectionUrlString);
+//        Statement st = (Statement) connection.createStatement();
+//        ResultSet rs =((java.sql.Statement) st).executeQuery("CREATE TABLE DonHang");
+        
+        
+	}	
+	public static void main(String[] args) throws SQLException {
+		SQLconnection();
 		new De_1_102200302_HoThanhHung();
 	}
+	String[] fileStrings;
+	String line = "";
 	@Override
-	public void actionPerformed(ActionEvent a){
-		//Import file function
+	public void actionPerformed(ActionEvent a) {
+		//Read file
 		String inputtextString = inputJTextField.getText();
-		
-		if (importfileButton.isEnabled() == true) {
-			try {
-				BufferedReader bReader = new BufferedReader(
-						new FileReader("C:\\Users\\DELL\\eclipse-workspace\\TestJava\\" + inputtextString));
-				String s;
-				while ((s = bReader.readLine())!= null) {
-					String[] aStrings = s.split(",");
-					for(int i = 0; i < 3; i++) {
-						textArea.setText(textArea.getText() + " " + aStrings[i] + " " + "\n");
-					}
-					
-					try {
-						Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-					} catch (ClassNotFoundException e1) {
-						// 
-						e1.printStackTrace();
-					}
-					String connnectionUrlString = "jdbc:sqlserver://DESKTOP-8622U14:1433;encrypt=true;user=sa;password=hung1312002;trustServerCertificate=true;";
-			        try (Connection connection = DriverManager.getConnection(connnectionUrlString)){
-			        }
-			        catch (SQLException el) {
-			            el.printStackTrace();
-			        }
-				}
-				bReader.close();
-			} catch (Exception e1) {
-				
-				e1.printStackTrace();
-			}
-			
+		String path = "C:\\Users\\DELL\\eclipse-workspace\\TestJava\\";
+		BufferedReader bReader = null;
+		try {
+			bReader = new BufferedReader(new FileReader(path + inputtextString));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-
+		//Import file function
+		String keywordtextString = keywordJTextField.getText();
+		Object object = a.getSource();
+		try {
+		if(object == importfileButton) {
+			textArea.setText("");
+				while ((line = bReader.readLine())!= null) {
+					fileStrings = line.split(",");
+					textArea.setText(textArea.getText() + fileStrings[0] + " " + fileStrings[1] + " " + fileStrings[2] + "\n");
+				} 
+			}
+		// Soluong Button
+		if (object == soluongButton) {
+			textArea.setText("");
+			int count = 0;
+					while ((line = bReader.readLine())!= null) {
+						fileStrings = line.split(",");
+						for(int i = 0; i < fileStrings.length; i++) {
+							if(fileStrings[i].equals(keywordtextString) == true) {
+								count++;
+							}
+						}
+					}
+			if (count == 0) {
+				textArea.setText("Khong tim thay mat hang nay!");
+			}
+			else {
+				textArea.setText(String.valueOf(count));
+			}
+		}
+		//Tong tien button
+		if (object == tongtienButton) {
+			textArea.setText("");
+			int tongtien = 0;
+				while ((line = bReader.readLine())!= null) {
+						fileStrings = line.split(",");
+					if(fileStrings[2].equals(keywordtextString) == true) {
+						tongtien += Integer.parseInt(fileStrings[1]);
+					}
+				}
+			textArea.setText(String.valueOf(tongtien));
+			}
+		if (object == goiyButton) {
+			textArea.setText("");
+			int tongtien = 0;
+			int tongtien1 = 0;
+			String[] tennguoimua = null;
+			textArea.setText("");
+			while ((line = bReader.readLine())!= null) {
+				fileStrings = line.split(",");
+			if(fileStrings[0].equals(keywordtextString) == true) {
+				tennguoimua = fileStrings[2].split("");
+				textArea.setText(textArea.getText() + fileStrings[2] + "\n");
+			}
+//			if (fileStrings[2].equals(tennguoimua) == true) {
+//				textArea.setText(textArea.getText() + fileStrings[2] + "\n");
+//			}
+		}
+		}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
 
